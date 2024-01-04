@@ -2,7 +2,14 @@
 name = "crontime"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+rust-version = "1.60"
+authors = ["Lucas Sunsi Abreu <lsunsi@pm.me>"]
+description = "cron expression -> time iterator"
+categories = ["parser-implementations", "date-and-time"]
+keywords = ["cron", "parser", "time"]
+repository = "https://github.com/lsunsi/crontime"
+homepage = "https://github.com/lsunsi/crontime"
+license = "GPL-3.0-only"
+readme = "README.md"
 
 [dependencies]

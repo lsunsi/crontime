@@ -13,3 +13,8 @@ license = "GPL-3.0-only"
 readme = "README.md"
 
 [dependencies]
+nom = { version = "7.0.0", default-features = false }
+time = { version = "0.3.0", default-features = false }
+
+[dev-dependencies]
+time = { version = "0.3.0", features = ["macros"], default-features = false }

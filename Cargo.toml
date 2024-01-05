@@ -13,6 +13,7 @@ license = "GPL-3.0-only"
 readme = "README.md"
 
 [dependencies]
+bitvec = { version = "1.0.0", default-features = false }
 nom = { version = "7.0.0", default-features = false }
 time = { version = "0.3.0", default-features = false }
 

@@ -1,10 +1,10 @@
 pub struct Crontime {
     o: time::PrimitiveDateTime,
-    minute: u8,
-    _hour: (),
-    _daym: (),
-    _month: (),
-    _dayw: (),
+    minute: bitvec::BitArr!(for 60),
+    _hour: bitvec::BitArr!(for 24),
+    _daym: bitvec::BitArr!(for 31),
+    _month: bitvec::BitArr!(for 12),
+    _dayw: bitvec::BitArr!(for 7),
 }
 
 impl TryFrom<(time::PrimitiveDateTime, &str)> for Crontime {
@@ -27,13 +27,18 @@ impl TryFrom<(time::PrimitiveDateTime, &str)> for Crontime {
             char(' '),
             char('*'),
         ))(s)
-        .map(|(_, (minute, _, _, _, _, _, _, _, _))| Crontime {
-            o,
-            minute,
-            _hour: (),
-            _daym: (),
-            _month: (),
-            _dayw: (),
+        .map(|(_, (min, _, _, _, _, _, _, _, _))| {
+            let mut minute = bitvec::array::BitArray::ZERO;
+            minute.set(min as usize, true);
+
+            Crontime {
+                o,
+                minute,
+                _hour: bitvec::array::BitArray::ZERO,
+                _daym: bitvec::array::BitArray::ZERO,
+                _month: bitvec::array::BitArray::ZERO,
+                _dayw: bitvec::array::BitArray::ZERO,
+            }
         })
     }
 }
@@ -44,10 +49,22 @@ impl Iterator for Crontime {
     fn next(&mut self) -> Option<Self::Item> {
         let o0 = self.o;
 
-        self.o = self.o.replace_minute(self.minute).unwrap();
+        for m in o0.minute() + 1..60 {
+            if self.minute[m as usize] {
+                self.o = self.o.replace_minute(m).unwrap();
+                break;
+            }
+        }
 
         if self.o <= o0 {
             self.o += time::Duration::hours(1);
+
+            for m in 0..60 {
+                if self.minute[m as usize] {
+                    self.o = self.o.replace_minute(m).unwrap();
+                    break;
+                }
+            }
         }
 
         Some(self.o)

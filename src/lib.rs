@@ -3,10 +3,10 @@ use nom::Parser;
 pub struct Crontime {
     o: time::PrimitiveDateTime,
     minute: bitvec::BitArr!(for 60),
-    hour: bitvec::BitArr!(for 24),
-    daym: bitvec::BitArr!(for 31),
-    month: bitvec::BitArr!(for 12),
-    dayw: bitvec::BitArr!(for 7),
+    _hour: bitvec::BitArr!(for 24),
+    _daym: bitvec::BitArr!(for 31),
+    _month: bitvec::BitArr!(for 12),
+    _dayw: bitvec::BitArr!(for 7),
 }
 
 pub fn build(origin: time::PrimitiveDateTime, expr: &str) -> Result<Crontime, nom::Err<()>> {
@@ -84,10 +84,10 @@ pub fn build(origin: time::PrimitiveDateTime, expr: &str) -> Result<Crontime, no
         Crontime {
             o: origin,
             minute,
-            hour,
-            daym,
-            month,
-            dayw,
+            _hour: hour,
+            _daym: daym,
+            _month: month,
+            _dayw: dayw,
         }
     })
 }

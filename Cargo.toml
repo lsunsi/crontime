@@ -12,6 +12,10 @@ homepage = "https://github.com/lsunsi/crontime"
 license = "GPL-3.0-only"
 readme = "README.md"
 
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "docsrs"]
+all-features = true
+
 [dependencies]
 bitvec = { version = "1.0.0", default-features = false }
 nom = { version = "7.0.0", features = ["alloc"], default-features = false }
@@ -19,3 +23,9 @@ time = { version = "0.3.0", default-features = false }
 
 [dev-dependencies]
 time = { version = "0.3.0", features = ["macros"], default-features = false }
+
+[lints.rust]
+warnings = "deny"
+
+[lints.clippy]
+all = "deny"

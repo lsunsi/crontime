@@ -1,46 +1,95 @@
+use nom::Parser;
+
 pub struct Crontime {
     o: time::PrimitiveDateTime,
     minute: bitvec::BitArr!(for 60),
-    _hour: bitvec::BitArr!(for 24),
-    _daym: bitvec::BitArr!(for 31),
-    _month: bitvec::BitArr!(for 12),
-    _dayw: bitvec::BitArr!(for 7),
+    hour: bitvec::BitArr!(for 24),
+    daym: bitvec::BitArr!(for 31),
+    month: bitvec::BitArr!(for 12),
+    dayw: bitvec::BitArr!(for 7),
 }
 
-impl TryFrom<(time::PrimitiveDateTime, &str)> for Crontime {
-    type Error = nom::Err<()>;
+pub fn build(origin: time::PrimitiveDateTime, expr: &str) -> Result<Crontime, nom::Err<()>> {
+    use nom::{
+        character::complete::{char, u8},
+        combinator::map,
+        multi::separated_list1,
+        sequence::{separated_pair, tuple},
+    };
 
-    fn try_from((o, s): (time::PrimitiveDateTime, &str)) -> Result<Self, Self::Error> {
-        use nom::{
-            character::complete::{char, u8},
-            sequence::tuple,
-        };
-
-        tuple((
-            u8,
-            char(' '),
-            char('*'),
-            char(' '),
-            char('*'),
-            char(' '),
-            char('*'),
-            char(' '),
-            char('*'),
-        ))(s)
-        .map(|(_, (min, _, _, _, _, _, _, _, _))| {
-            let mut minute = bitvec::array::BitArray::ZERO;
-            minute.set(min as usize, true);
-
-            Crontime {
-                o,
-                minute,
-                _hour: bitvec::array::BitArray::ZERO,
-                _daym: bitvec::array::BitArray::ZERO,
-                _month: bitvec::array::BitArray::ZERO,
-                _dayw: bitvec::array::BitArray::ZERO,
-            }
-        })
+    enum P {
+        Any,
+        Single(u8),
+        Range((u8, u8)),
+        Many(Vec<u8>),
     }
+
+    impl P {
+        fn render(self, bits: &mut bitvec::slice::BitSlice) {
+            match self {
+                P::Any => bits.fill(true),
+                P::Single(i) => bits.set(i as usize, true),
+                P::Range((i, j)) => bits[i as usize..j as usize].fill(true),
+                P::Many(is) => {
+                    for i in is {
+                        bits.set(i as usize, true);
+                    }
+                }
+            }
+        }
+    }
+
+    tuple((
+        map(u8, P::Single)
+            .or(map(char('*'), |_| P::Any))
+            .or(map(separated_list1(char(','), u8), P::Many))
+            .or(map(separated_pair(u8, char('-'), u8), P::Range)),
+        char(' '),
+        map(u8, P::Single)
+            .or(map(char('*'), |_| P::Any))
+            .or(map(separated_list1(char(','), u8), P::Many))
+            .or(map(separated_pair(u8, char('-'), u8), P::Range)),
+        char(' '),
+        map(u8, P::Single)
+            .or(map(char('*'), |_| P::Any))
+            .or(map(separated_list1(char(','), u8), P::Many))
+            .or(map(separated_pair(u8, char('-'), u8), P::Range)),
+        char(' '),
+        map(u8, P::Single)
+            .or(map(char('*'), |_| P::Any))
+            .or(map(separated_list1(char(','), u8), P::Many))
+            .or(map(separated_pair(u8, char('-'), u8), P::Range)),
+        char(' '),
+        map(u8, P::Single)
+            .or(map(char('*'), |_| P::Any))
+            .or(map(separated_list1(char(','), u8), P::Many))
+            .or(map(separated_pair(u8, char('-'), u8), P::Range)),
+    ))(expr)
+    .map(|(_, (minutep, _, hourp, _, daymp, _, monthp, _, daywp))| {
+        let mut minute = bitvec::array::BitArray::ZERO;
+        minutep.render(&mut minute);
+
+        let mut hour = bitvec::array::BitArray::ZERO;
+        hourp.render(&mut hour);
+
+        let mut daym = bitvec::array::BitArray::ZERO;
+        daymp.render(&mut daym);
+
+        let mut month = bitvec::array::BitArray::ZERO;
+        monthp.render(&mut month);
+
+        let mut dayw = bitvec::array::BitArray::ZERO;
+        daywp.render(&mut dayw);
+
+        Crontime {
+            o: origin,
+            minute,
+            hour,
+            daym,
+            month,
+            dayw,
+        }
+    })
 }
 
 impl Iterator for Crontime {
@@ -81,6 +130,13 @@ mod tests {
 
         let ios = [
             (
+                "* * * * *",
+                &[
+                    datetime!(1917-11-07 00:01:00),
+                    datetime!(1917-11-07 00:02:00),
+                ],
+            ),
+            (
                 "0 * * * *",
                 &[
                     datetime!(1917-11-07 01:00:00),
@@ -97,7 +153,7 @@ mod tests {
         ];
 
         for (i, os) in ios {
-            let mut ct: super::Crontime = (now, i).try_into().unwrap();
+            let mut ct = super::build(now, i).unwrap();
 
             for o in os {
                 println!("{i} {o}");

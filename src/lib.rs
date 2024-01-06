@@ -11,6 +11,7 @@ pub fn build(origin: time::PrimitiveDateTime, expr: &str) -> Result<Crontime, no
     use nom::{
         character::complete::{char, u8},
         combinator::map,
+        error::ParseError,
         multi::separated_list1,
         sequence::{separated_pair, tuple},
         Parser,
@@ -24,6 +25,13 @@ pub fn build(origin: time::PrimitiveDateTime, expr: &str) -> Result<Crontime, no
     }
 
     impl P {
+        fn parser<'a, E: ParseError<&'a str>>() -> impl Parser<&'a str, P, E> {
+            map(char('*'), |_| P::Any)
+                .or(map(separated_pair(u8, char('-'), u8), P::Range))
+                .or(map(separated_list1(char(','), u8), P::Many))
+                .or(map(u8, P::Single))
+        }
+
         fn render(self, bits: &mut bitvec::slice::BitSlice) {
             match self {
                 P::Any => bits.fill(true),
@@ -39,30 +47,15 @@ pub fn build(origin: time::PrimitiveDateTime, expr: &str) -> Result<Crontime, no
     }
 
     tuple((
-        map(char('*'), |_| P::Any)
-            .or(map(separated_pair(u8, char('-'), u8), P::Range))
-            .or(map(separated_list1(char(','), u8), P::Many))
-            .or(map(u8, P::Single)),
+        P::parser(),
         char(' '),
-        map(char('*'), |_| P::Any)
-            .or(map(separated_pair(u8, char('-'), u8), P::Range))
-            .or(map(separated_list1(char(','), u8), P::Many))
-            .or(map(u8, P::Single)),
+        P::parser(),
         char(' '),
-        map(char('*'), |_| P::Any)
-            .or(map(separated_pair(u8, char('-'), u8), P::Range))
-            .or(map(separated_list1(char(','), u8), P::Many))
-            .or(map(u8, P::Single)),
+        P::parser(),
         char(' '),
-        map(char('*'), |_| P::Any)
-            .or(map(separated_pair(u8, char('-'), u8), P::Range))
-            .or(map(separated_list1(char(','), u8), P::Many))
-            .or(map(u8, P::Single)),
+        P::parser(),
         char(' '),
-        map(char('*'), |_| P::Any)
-            .or(map(separated_pair(u8, char('-'), u8), P::Range))
-            .or(map(separated_list1(char(','), u8), P::Many))
-            .or(map(u8, P::Single)),
+        P::parser(),
     ))(expr)
     .map(|(_, (minutep, _, hourp, _, daymp, _, monthp, _, daywp))| {
         let mut minute = bitvec::array::BitArray::ZERO;

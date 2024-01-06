@@ -1,5 +1,3 @@
-use nom::Parser;
-
 pub struct Crontime {
     o: time::PrimitiveDateTime,
     minute: bitvec::BitArr!(for 60),
@@ -15,6 +13,7 @@ pub fn build(origin: time::PrimitiveDateTime, expr: &str) -> Result<Crontime, no
         combinator::map,
         multi::separated_list1,
         sequence::{separated_pair, tuple},
+        Parser,
     };
 
     enum P {
@@ -29,7 +28,7 @@ pub fn build(origin: time::PrimitiveDateTime, expr: &str) -> Result<Crontime, no
             match self {
                 P::Any => bits.fill(true),
                 P::Single(i) => bits.set(i as usize, true),
-                P::Range((i, j)) => bits[i as usize..j as usize].fill(true),
+                P::Range((i, j)) => bits[i as usize..=j as usize].fill(true),
                 P::Many(is) => {
                     for i in is {
                         bits.set(i as usize, true);
@@ -40,30 +39,30 @@ pub fn build(origin: time::PrimitiveDateTime, expr: &str) -> Result<Crontime, no
     }
 
     tuple((
-        map(u8, P::Single)
-            .or(map(char('*'), |_| P::Any))
+        map(char('*'), |_| P::Any)
+            .or(map(separated_pair(u8, char('-'), u8), P::Range))
             .or(map(separated_list1(char(','), u8), P::Many))
-            .or(map(separated_pair(u8, char('-'), u8), P::Range)),
+            .or(map(u8, P::Single)),
         char(' '),
-        map(u8, P::Single)
-            .or(map(char('*'), |_| P::Any))
+        map(char('*'), |_| P::Any)
+            .or(map(separated_pair(u8, char('-'), u8), P::Range))
             .or(map(separated_list1(char(','), u8), P::Many))
-            .or(map(separated_pair(u8, char('-'), u8), P::Range)),
+            .or(map(u8, P::Single)),
         char(' '),
-        map(u8, P::Single)
-            .or(map(char('*'), |_| P::Any))
+        map(char('*'), |_| P::Any)
+            .or(map(separated_pair(u8, char('-'), u8), P::Range))
             .or(map(separated_list1(char(','), u8), P::Many))
-            .or(map(separated_pair(u8, char('-'), u8), P::Range)),
+            .or(map(u8, P::Single)),
         char(' '),
-        map(u8, P::Single)
-            .or(map(char('*'), |_| P::Any))
+        map(char('*'), |_| P::Any)
+            .or(map(separated_pair(u8, char('-'), u8), P::Range))
             .or(map(separated_list1(char(','), u8), P::Many))
-            .or(map(separated_pair(u8, char('-'), u8), P::Range)),
+            .or(map(u8, P::Single)),
         char(' '),
-        map(u8, P::Single)
-            .or(map(char('*'), |_| P::Any))
+        map(char('*'), |_| P::Any)
+            .or(map(separated_pair(u8, char('-'), u8), P::Range))
             .or(map(separated_list1(char(','), u8), P::Many))
-            .or(map(separated_pair(u8, char('-'), u8), P::Range)),
+            .or(map(u8, P::Single)),
     ))(expr)
     .map(|(_, (minutep, _, hourp, _, daymp, _, monthp, _, daywp))| {
         let mut minute = bitvec::array::BitArray::ZERO;
@@ -122,13 +121,13 @@ impl Iterator for Crontime {
 
 #[cfg(test)]
 mod tests {
-    use time::macros::datetime;
+    use time::{macros::datetime, PrimitiveDateTime};
 
     #[test]
     fn test() {
         let now = datetime!(1917-11-07 00:00:00);
 
-        let ios = [
+        let ios: &[(&str, &[PrimitiveDateTime])] = &[
             (
                 "* * * * *",
                 &[
@@ -150,14 +149,31 @@ mod tests {
                     datetime!(1917-11-07 01:07:00),
                 ],
             ),
+            (
+                "2-4 * * * *",
+                &[
+                    datetime!(1917-11-07 00:02:00),
+                    datetime!(1917-11-07 00:03:00),
+                    datetime!(1917-11-07 00:04:00),
+                    datetime!(1917-11-07 01:02:00),
+                ],
+            ),
+            (
+                "2,4 * * * *",
+                &[
+                    datetime!(1917-11-07 00:02:00),
+                    datetime!(1917-11-07 00:04:00),
+                    datetime!(1917-11-07 01:02:00),
+                ],
+            ),
         ];
 
         for (i, os) in ios {
-            let mut ct = super::build(now, i).unwrap();
+            let mut ct = super::build(now, i).expect("build");
 
-            for o in os {
+            for o in *os {
                 println!("{i} {o}");
-                assert_eq!(ct.next().unwrap(), *o);
+                assert_eq!(ct.next().expect("next"), *o);
             }
 
             println!();

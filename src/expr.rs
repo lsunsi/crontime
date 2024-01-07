@@ -7,6 +7,7 @@ use nom::{
     Parser,
 };
 
+#[derive(Clone, Copy)]
 pub(super) struct Expr {
     pub minute: bitvec::BitArr!(for 60),
     pub hour: bitvec::BitArr!(for 24),

@@ -1,8 +1,5 @@
-use bitvec::slice::BitSlice;
-use time::PrimitiveDateTime;
-
 impl Iterator for super::Crontime {
-    type Item = PrimitiveDateTime;
+    type Item = time::OffsetDateTime;
 
     fn next(&mut self) -> Option<Self::Item> {
         let (next_minute, loop_minute) = next(self.o.minute() as usize + 1, 60, &self.e.minute);
@@ -21,7 +18,7 @@ impl Iterator for super::Crontime {
     }
 }
 
-pub(super) fn init(mut o: PrimitiveDateTime, e: super::expr::Expr) -> PrimitiveDateTime {
+pub(super) fn init(mut o: time::OffsetDateTime, e: super::expr::Expr) -> time::OffsetDateTime {
     let (next_minute, loop_minute) = next(o.minute() as usize, 60, &e.minute);
     o = o.replace_minute(next_minute as u8).expect("minute");
 
@@ -31,7 +28,7 @@ pub(super) fn init(mut o: PrimitiveDateTime, e: super::expr::Expr) -> PrimitiveD
     o - time::Duration::minutes(1)
 }
 
-fn next(from: usize, to: usize, bits: &BitSlice) -> (usize, bool) {
+fn next(from: usize, to: usize, bits: &bitvec::slice::BitSlice) -> (usize, bool) {
     if let Some(i) = bits[from..to].first_one() {
         return (from + i, false);
     };

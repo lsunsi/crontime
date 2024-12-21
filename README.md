@@ -12,7 +12,7 @@ For now it yields an iterator of upcoming datetimes that follow the parsed expre
 
 ```rust
 let now = datetime!(1917-11-07 00:00:00 UTC);
-let ct = crontime::build(now, "1 * * * *").unwrap();
+let ct = crontime::build(now, "0 1 * * * *").unwrap();
 
 for dt in ct.take(3) {
     println!("{dt}");

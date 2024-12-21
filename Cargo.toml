@@ -1,6 +1,6 @@
 [package]
 name = "crontime"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 rust-version = "1.60"
 authors = ["Lucas Sunsi Abreu <lsunsi@pm.me>"]

@@ -9,6 +9,7 @@ use nom::{
 
 #[derive(Clone, Copy)]
 pub(super) struct Expr {
+    pub second: bitvec::BitArr!(for 60),
     pub minute: bitvec::BitArr!(for 60),
     pub hour: bitvec::BitArr!(for 24),
     pub _daym: bitvec::BitArr!(for 31),
@@ -30,31 +31,39 @@ impl std::str::FromStr for Expr {
             Pat::parser(),
             char(' '),
             Pat::parser(),
+            char(' '),
+            Pat::parser(),
         ))(s)
-        .map(|(_, (minutep, _, hourp, _, daymp, _, monthp, _, daywp))| {
-            let mut minute = bitvec::array::BitArray::ZERO;
-            minutep.render(&mut minute);
+        .map(
+            |(_, (secondp, _, minutep, _, hourp, _, daymp, _, monthp, _, daywp))| {
+                let mut second = bitvec::array::BitArray::ZERO;
+                secondp.render(&mut second);
 
-            let mut hour = bitvec::array::BitArray::ZERO;
-            hourp.render(&mut hour);
+                let mut minute = bitvec::array::BitArray::ZERO;
+                minutep.render(&mut minute);
 
-            let mut daym = bitvec::array::BitArray::ZERO;
-            daymp.render(&mut daym);
+                let mut hour = bitvec::array::BitArray::ZERO;
+                hourp.render(&mut hour);
 
-            let mut month = bitvec::array::BitArray::ZERO;
-            monthp.render(&mut month);
+                let mut daym = bitvec::array::BitArray::ZERO;
+                daymp.render(&mut daym);
 
-            let mut dayw = bitvec::array::BitArray::ZERO;
-            daywp.render(&mut dayw);
+                let mut month = bitvec::array::BitArray::ZERO;
+                monthp.render(&mut month);
 
-            Expr {
-                minute,
-                hour,
-                _daym: daym,
-                _month: month,
-                _dayw: dayw,
-            }
-        })
+                let mut dayw = bitvec::array::BitArray::ZERO;
+                daywp.render(&mut dayw);
+
+                Expr {
+                    second,
+                    minute,
+                    hour,
+                    _daym: daym,
+                    _month: month,
+                    _dayw: dayw,
+                }
+            },
+        )
     }
 }
 

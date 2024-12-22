@@ -67,6 +67,75 @@ fn seconds_range() {
 }
 
 #[test]
+fn minutes_any() {
+    assert(
+        "0 * * * * *",
+        &[
+            (0, datetime!(1917-11-07 00:00:00 UTC)),
+            (1, datetime!(1917-11-07 00:01:00 UTC)),
+            (60, datetime!(1917-11-07 01:00:00 UTC)),
+            (62, datetime!(1917-11-07 01:02:00 UTC)),
+        ],
+    );
+}
+
+#[test]
+fn minutes_single() {
+    assert(
+        "0 7 * * * *",
+        &[
+            (0, datetime!(1917-11-07 00:07:00 UTC)),
+            (1, datetime!(1917-11-07 01:07:00 UTC)),
+            (24, datetime!(1917-11-08 00:07:00 UTC)),
+            (26, datetime!(1917-11-08 02:07:00 UTC)),
+        ],
+    );
+
+    assert(
+        "0 59 * * * *",
+        &[
+            (0, datetime!(1917-11-07 00:59:00 UTC)),
+            (1, datetime!(1917-11-07 01:59:00 UTC)),
+            (24, datetime!(1917-11-08 00:59:00 UTC)),
+            (26, datetime!(1917-11-08 02:59:00 UTC)),
+        ],
+    );
+}
+
+#[test]
+fn minutes_many() {
+    assert(
+        "0 7,31,59 * * * *",
+        &[
+            (0, datetime!(1917-11-07 00:07:00 UTC)),
+            (1, datetime!(1917-11-07 00:31:00 UTC)),
+            (2, datetime!(1917-11-07 00:59:00 UTC)),
+            (3, datetime!(1917-11-07 01:07:00 UTC)),
+            (6, datetime!(1917-11-07 02:07:00 UTC)),
+            (8, datetime!(1917-11-07 02:59:00 UTC)),
+        ],
+    );
+}
+
+#[test]
+fn minutes_range() {
+    assert(
+        "0 17-39 * * * *",
+        &[
+            (0, datetime!(1917-11-07 00:17:00 UTC)),
+            (1, datetime!(1917-11-07 00:18:00 UTC)),
+            (2, datetime!(1917-11-07 00:19:00 UTC)),
+            (20, datetime!(1917-11-07 00:37:00 UTC)),
+            (21, datetime!(1917-11-07 00:38:00 UTC)),
+            (22, datetime!(1917-11-07 00:39:00 UTC)),
+            (23, datetime!(1917-11-07 01:17:00 UTC)),
+            (46, datetime!(1917-11-07 02:17:00 UTC)),
+            (48, datetime!(1917-11-07 02:19:00 UTC)),
+        ],
+    );
+}
+
+#[test]
 fn test_legacy() {
     let now = datetime!(1917-11-07 00:00:00 UTC);
 

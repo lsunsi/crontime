@@ -136,6 +136,61 @@ fn minutes_range() {
 }
 
 #[test]
+fn hours_single() {
+    assert(
+        "0 0 11 * * *",
+        &[
+            (0, datetime!(1917-11-07 11:00:00 UTC)),
+            (1, datetime!(1917-11-08 11:00:00 UTC)),
+            (2, datetime!(1917-11-09 11:00:00 UTC)),
+            (24, datetime!(1917-12-01 11:00:00 UTC)),
+        ],
+    );
+
+    assert(
+        "0 0 23 * * *",
+        &[
+            (0, datetime!(1917-11-07 23:00:00 UTC)),
+            (1, datetime!(1917-11-08 23:00:00 UTC)),
+            (2, datetime!(1917-11-09 23:00:00 UTC)),
+            (24, datetime!(1917-12-01 23:00:00 UTC)),
+        ],
+    );
+}
+
+#[test]
+fn hours_many() {
+    assert(
+        "0 0 6,8,23 * * *",
+        &[
+            (0, datetime!(1917-11-07 06:00:00 UTC)),
+            (1, datetime!(1917-11-07 08:00:00 UTC)),
+            (2, datetime!(1917-11-07 23:00:00 UTC)),
+            (3, datetime!(1917-11-08 06:00:00 UTC)),
+            (4, datetime!(1917-11-08 08:00:00 UTC)),
+            (5, datetime!(1917-11-08 23:00:00 UTC)),
+            (72, datetime!(1917-12-01 06:00:00 UTC)),
+        ],
+    );
+}
+
+#[test]
+fn hours_range() {
+    assert(
+        "0 0 11-13 * * *",
+        &[
+            (0, datetime!(1917-11-07 11:00:00 UTC)),
+            (1, datetime!(1917-11-07 12:00:00 UTC)),
+            (2, datetime!(1917-11-07 13:00:00 UTC)),
+            (3, datetime!(1917-11-08 11:00:00 UTC)),
+            (4, datetime!(1917-11-08 12:00:00 UTC)),
+            (5, datetime!(1917-11-08 13:00:00 UTC)),
+            (72, datetime!(1917-12-01 11:00:00 UTC)),
+        ],
+    );
+}
+
+#[test]
 fn test_legacy() {
     let now = datetime!(1917-11-07 00:00:00 UTC);
 

@@ -1,4 +1,11 @@
 use time::macros::datetime;
+const ORIGIN: time::OffsetDateTime = datetime!(1917-11-07 00:00:00 UTC);
+
+#[test]
+fn seconds_invalid() {
+    assert!(crontime::build(ORIGIN, "-1 * * * * *").is_err());
+    assert!(crontime::build(ORIGIN, "60 * * * * *").is_err());
+}
 
 #[test]
 fn seconds_any() {
@@ -64,6 +71,12 @@ fn seconds_range() {
             (182, datetime!(1917-11-07 01:00:05 UTC)),
         ],
     );
+}
+
+#[test]
+fn minutes_invalid() {
+    assert!(crontime::build(ORIGIN, "* -1 * * * *").is_err());
+    assert!(crontime::build(ORIGIN, "* 60 * * * *").is_err());
 }
 
 #[test]
@@ -133,6 +146,12 @@ fn minutes_range() {
             (48, datetime!(1917-11-07 02:19:00 UTC)),
         ],
     );
+}
+
+#[test]
+fn hours_invalid() {
+    assert!(crontime::build(ORIGIN, "* * -1 * * *").is_err());
+    assert!(crontime::build(ORIGIN, "* * 24 * * *").is_err());
 }
 
 #[test]
@@ -298,9 +317,7 @@ fn test_legacy() {
 }
 
 fn assert(i: &'static str, os: &[(usize, time::OffsetDateTime)]) {
-    let origin = datetime!(1917-11-07 00:00:00 UTC);
-
-    let mut ct = crontime::build(origin, i).expect("build").enumerate();
+    let mut ct = crontime::build(ORIGIN, i).expect("build").enumerate();
 
     for (n, o) in os {
         let oo = ct

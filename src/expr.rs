@@ -1,6 +1,6 @@
 use nom::{
     character::complete::{char, u8},
-    combinator::map,
+    combinator::{map, verify},
     error::ParseError,
     multi::separated_list1,
     sequence::{separated_pair, tuple},
@@ -22,17 +22,17 @@ impl std::str::FromStr for Expr {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         tuple((
-            Pat::parser(),
+            Pat::<60>::parser(),
             char(' '),
-            Pat::parser(),
+            Pat::<60>::parser(),
             char(' '),
-            Pat::parser(),
+            Pat::<24>::parser(),
             char(' '),
-            Pat::parser(),
+            Pat::<31>::parser(),
             char(' '),
-            Pat::parser(),
+            Pat::<12>::parser(),
             char(' '),
-            Pat::parser(),
+            Pat::<7>::parser(),
         ))(s)
         .map(
             |(_, (secondp, _, minutep, _, hourp, _, daymp, _, monthp, _, daywp))| {
@@ -67,19 +67,26 @@ impl std::str::FromStr for Expr {
     }
 }
 
-enum Pat {
+enum Pat<const N: u8> {
     Any,
     Single(u8),
-    Range((u8, u8)),
     Many(Vec<u8>),
+    Range((u8, u8)),
 }
 
-impl Pat {
-    fn parser<'a, E: ParseError<&'a str>>() -> impl Parser<&'a str, Pat, E> {
+impl<const N: u8> Pat<N> {
+    fn u8n<'a, E: ParseError<&'a str>>() -> impl Parser<&'a str, u8, E> {
+        verify(u8, |n| *n < N)
+    }
+
+    fn parser<'a, E: ParseError<&'a str>>() -> impl Parser<&'a str, Pat<N>, E> {
         map(char('*'), |_| Pat::Any)
-            .or(map(separated_pair(u8, char('-'), u8), Pat::Range))
-            .or(map(separated_list1(char(','), u8), Pat::Many))
-            .or(map(u8, Pat::Single))
+            .or(map(
+                separated_pair(Self::u8n(), char('-'), Self::u8n()),
+                Pat::Range,
+            ))
+            .or(map(separated_list1(char(','), Self::u8n()), Pat::Many))
+            .or(map(Self::u8n(), Pat::Single))
     }
 
     fn render(self, bits: &mut bitvec::slice::BitSlice) {

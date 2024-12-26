@@ -2,13 +2,13 @@ use time::macros::datetime;
 const ORIGIN: time::OffsetDateTime = datetime!(1917-11-07 00:00:00 UTC);
 
 #[test]
-fn seconds_invalid() {
+fn second_invalid() {
     assert!(crontime::build(ORIGIN, "-1 * * * * *").is_err());
     assert!(crontime::build(ORIGIN, "60 * * * * *").is_err());
 }
 
 #[test]
-fn seconds_any() {
+fn second_any() {
     assert(
         "* * * * * *",
         &[
@@ -21,7 +21,7 @@ fn seconds_any() {
 }
 
 #[test]
-fn seconds_single() {
+fn second_single() {
     assert(
         "1 * * * * *",
         &[
@@ -44,7 +44,7 @@ fn seconds_single() {
 }
 
 #[test]
-fn seconds_many() {
+fn second_many() {
     assert(
         "1,9,7 * * * * *",
         &[
@@ -59,7 +59,7 @@ fn seconds_many() {
 }
 
 #[test]
-fn seconds_range() {
+fn second_range() {
     assert(
         "3-5 * * * * *",
         &[
@@ -74,13 +74,13 @@ fn seconds_range() {
 }
 
 #[test]
-fn minutes_invalid() {
+fn minute_invalid() {
     assert!(crontime::build(ORIGIN, "* -1 * * * *").is_err());
     assert!(crontime::build(ORIGIN, "* 60 * * * *").is_err());
 }
 
 #[test]
-fn minutes_any() {
+fn minute_any() {
     assert(
         "0 * * * * *",
         &[
@@ -93,7 +93,7 @@ fn minutes_any() {
 }
 
 #[test]
-fn minutes_single() {
+fn minute_single() {
     assert(
         "0 7 * * * *",
         &[
@@ -116,7 +116,7 @@ fn minutes_single() {
 }
 
 #[test]
-fn minutes_many() {
+fn minute_many() {
     assert(
         "0 7,31,59 * * * *",
         &[
@@ -131,7 +131,7 @@ fn minutes_many() {
 }
 
 #[test]
-fn minutes_range() {
+fn minute_range() {
     assert(
         "0 17-39 * * * *",
         &[
@@ -149,13 +149,13 @@ fn minutes_range() {
 }
 
 #[test]
-fn hours_invalid() {
+fn hour_invalid() {
     assert!(crontime::build(ORIGIN, "* * -1 * * *").is_err());
     assert!(crontime::build(ORIGIN, "* * 24 * * *").is_err());
 }
 
 #[test]
-fn hours_single() {
+fn hour_single() {
     assert(
         "0 0 11 * * *",
         &[
@@ -178,7 +178,7 @@ fn hours_single() {
 }
 
 #[test]
-fn hours_many() {
+fn hour_many() {
     assert(
         "0 0 6,8,23 * * *",
         &[
@@ -194,7 +194,7 @@ fn hours_many() {
 }
 
 #[test]
-fn hours_range() {
+fn hour_range() {
     assert(
         "0 0 11-13 * * *",
         &[
@@ -205,6 +205,94 @@ fn hours_range() {
             (4, datetime!(1917-11-08 12:00:00 UTC)),
             (5, datetime!(1917-11-08 13:00:00 UTC)),
             (72, datetime!(1917-12-01 11:00:00 UTC)),
+        ],
+    );
+}
+
+#[test]
+fn daym_invalid() {
+    assert!(crontime::build(ORIGIN, "* * * 0 * *").is_err());
+    assert!(crontime::build(ORIGIN, "* * * 32 * *").is_err());
+}
+
+#[test]
+fn daym_single() {
+    assert(
+        "0 0 0 1 * *",
+        &[
+            (0, datetime!(1917-12-01 00:00:00 UTC)),
+            (1, datetime!(1918-01-01 00:00:00 UTC)),
+            (2, datetime!(1918-02-01 00:00:00 UTC)),
+            (12, datetime!(1918-12-01 00:00:00 UTC)),
+            (15, datetime!(1919-03-01 00:00:00 UTC)),
+        ],
+    );
+
+    assert(
+        "0 0 0 12 * *",
+        &[
+            (0, datetime!(1917-11-12 00:00:00 UTC)),
+            (1, datetime!(1917-12-12 00:00:00 UTC)),
+            (2, datetime!(1918-01-12 00:00:00 UTC)),
+            (12, datetime!(1918-11-12 00:00:00 UTC)),
+            (15, datetime!(1919-02-12 00:00:00 UTC)),
+        ],
+    );
+
+    assert(
+        "0 0 0 29 * *",
+        &[
+            (0, datetime!(1917-11-29 00:00:00 UTC)),
+            (1, datetime!(1917-12-29 00:00:00 UTC)),
+            (2, datetime!(1918-01-29 00:00:00 UTC)),
+            (12, datetime!(1918-12-29 00:00:00 UTC)),
+            (13, datetime!(1919-01-29 00:00:00 UTC)),
+            (14, datetime!(1919-03-29 00:00:00 UTC)),
+            (25, datetime!(1920-02-29 00:00:00 UTC)),
+        ],
+    );
+
+    assert(
+        "0 0 0 31 * *",
+        &[
+            (0, datetime!(1917-12-31 00:00:00 UTC)),
+            (1, datetime!(1918-01-31 00:00:00 UTC)),
+            (2, datetime!(1918-03-31 00:00:00 UTC)),
+            (4, datetime!(1918-07-31 00:00:00 UTC)),
+            (7, datetime!(1918-12-31 00:00:00 UTC)),
+            (8, datetime!(1919-01-31 00:00:00 UTC)),
+        ],
+    );
+}
+
+#[test]
+fn daym_many() {
+    assert(
+        "0 0 0 7,29,31 * *",
+        &[
+            (0, datetime!(1917-11-07 00:00:00 UTC)),
+            (1, datetime!(1917-11-29 00:00:00 UTC)),
+            (2, datetime!(1917-12-07 00:00:00 UTC)),
+            (3, datetime!(1917-12-29 00:00:00 UTC)),
+            (4, datetime!(1917-12-31 00:00:00 UTC)),
+            (5, datetime!(1918-01-07 00:00:00 UTC)),
+        ],
+    );
+}
+
+#[test]
+fn daym_range() {
+    assert(
+        "0 0 0 27-29 * *",
+        &[
+            (0, datetime!(1917-11-27 00:00:00 UTC)),
+            (1, datetime!(1917-11-28 00:00:00 UTC)),
+            (2, datetime!(1917-11-29 00:00:00 UTC)),
+            (3, datetime!(1917-12-27 00:00:00 UTC)),
+            (4, datetime!(1917-12-28 00:00:00 UTC)),
+            (5, datetime!(1917-12-29 00:00:00 UTC)),
+            (9, datetime!(1918-02-27 00:00:00 UTC)),
+            (11, datetime!(1918-03-27 00:00:00 UTC)),
         ],
     );
 }

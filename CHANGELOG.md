@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0](https://github.com/lsunsi/crontime/compare/v0.3.0...v0.4.0) - 2024-12-26
+
+### Added
+
+- add support for day of month
+- make invalid ints errors instead of panics
+- add tests for hours
+- add tests for minutes
+- add better split seconds test
+
+### Other
+
+- fix readme
+
 ## [0.3.0](https://github.com/lsunsi/crontime/compare/v0.2.0...v0.3.0) - 2024-12-21
 
 ### Added

@@ -1,6 +1,6 @@
 use nom::{
     character::complete::{char, u8},
-    combinator::{map, verify},
+    combinator::{eof, map, verify},
     error::ParseError,
     multi::separated_list1,
     sequence::{separated_pair, tuple},
@@ -33,9 +33,10 @@ impl std::str::FromStr for Expr {
             Pat::<1, 13>::parser(),
             char(' '),
             Pat::<0, 7>::parser(),
+            eof,
         ))(s)
         .map(
-            |(_, (secondp, _, minutep, _, hourp, _, daymp, _, monthp, _, daywp))| {
+            |(_, (secondp, _, minutep, _, hourp, _, daymp, _, monthp, _, daywp, _))| {
                 let mut second = bitvec::array::BitArray::ZERO;
                 secondp.render(&mut second);
 

@@ -353,7 +353,7 @@ fn month_many() {
 #[test]
 fn month_range() {
     assert(
-        "0 0 0 1 10-12 * *",
+        "0 0 0 1 10-12 *",
         &[
             (0, datetime!(1917-12-01 00:00:00 UTC)),
             (1, datetime!(1918-10-01 00:00:00 UTC)),

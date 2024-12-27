@@ -27,14 +27,16 @@ impl Iterator for super::Crontime {
         let (next_daym, loop_daym) = next(self.o.day() as usize, max, &self.e.daym);
 
         if loop_daym {
+            let (next_month, loop_month) = next(self.o.month() as usize, 12, &self.e.month);
+
             let mut o = self
                 .o
                 .replace_day(1)
                 .expect("hour")
-                .replace_month(self.o.month().next())
+                .replace_month(time::Month::try_from(next_month as u8 + 1).unwrap())
                 .expect("month");
 
-            if o.month() as u8 == 1 {
+            if loop_month {
                 o = o.replace_year(o.year() + 1).expect("year");
             }
 

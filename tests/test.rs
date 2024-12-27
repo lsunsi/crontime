@@ -298,6 +298,76 @@ fn daym_range() {
 }
 
 #[test]
+fn month_invalid() {
+    assert!(crontime::build(ORIGIN, "* * * * 0 *").is_err());
+    assert!(crontime::build(ORIGIN, "* * * * 13 *").is_err());
+}
+
+#[test]
+fn month_single() {
+    assert(
+        "0 0 0 1 1 *",
+        &[
+            (0, datetime!(1918-01-01 00:00:00 UTC)),
+            (1, datetime!(1919-01-01 00:00:00 UTC)),
+            (2, datetime!(1920-01-01 00:00:00 UTC)),
+            (9, datetime!(1927-01-01 00:00:00 UTC)),
+        ],
+    );
+
+    assert(
+        "0 0 0 1 11 *",
+        &[
+            (0, datetime!(1918-11-01 00:00:00 UTC)),
+            (1, datetime!(1919-11-01 00:00:00 UTC)),
+            (2, datetime!(1920-11-01 00:00:00 UTC)),
+            (9, datetime!(1927-11-01 00:00:00 UTC)),
+        ],
+    );
+
+    assert(
+        "0 0 0 1 12 *",
+        &[
+            (0, datetime!(1917-12-01 00:00:00 UTC)),
+            (1, datetime!(1918-12-01 00:00:00 UTC)),
+            (2, datetime!(1919-12-01 00:00:00 UTC)),
+            (9, datetime!(1926-12-01 00:00:00 UTC)),
+        ],
+    );
+}
+
+#[test]
+fn month_many() {
+    assert(
+        "0 0 0 1 5,11,12 *",
+        &[
+            (0, datetime!(1917-12-01 00:00:00 UTC)),
+            (1, datetime!(1918-05-01 00:00:00 UTC)),
+            (2, datetime!(1918-11-01 00:00:00 UTC)),
+            (3, datetime!(1918-12-01 00:00:00 UTC)),
+            (4, datetime!(1919-05-01 00:00:00 UTC)),
+        ],
+    );
+}
+
+#[test]
+fn month_range() {
+    assert(
+        "0 0 0 1 10-12 * *",
+        &[
+            (0, datetime!(1917-12-01 00:00:00 UTC)),
+            (1, datetime!(1918-10-01 00:00:00 UTC)),
+            (2, datetime!(1918-11-01 00:00:00 UTC)),
+            (3, datetime!(1918-12-01 00:00:00 UTC)),
+            (4, datetime!(1919-10-01 00:00:00 UTC)),
+        ],
+    );
+}
+
+// dayw
+// transitions
+
+#[test]
 fn test_legacy() {
     let now = datetime!(1917-11-07 00:00:00 UTC);
 

@@ -13,7 +13,7 @@ pub(super) struct Expr {
     pub minute: bitvec::BitArr!(for 60),
     pub hour: bitvec::BitArr!(for 24),
     pub daym: bitvec::BitArr!(for 31),
-    pub _month: bitvec::BitArr!(for 12),
+    pub month: bitvec::BitArr!(for 12),
     pub _dayw: bitvec::BitArr!(for 7),
 }
 
@@ -30,7 +30,7 @@ impl std::str::FromStr for Expr {
             char(' '),
             Pat::<1, 32>::parser(),
             char(' '),
-            Pat::<0, 12>::parser(),
+            Pat::<1, 13>::parser(),
             char(' '),
             Pat::<0, 7>::parser(),
         ))(s)
@@ -59,7 +59,7 @@ impl std::str::FromStr for Expr {
                     minute,
                     hour,
                     daym,
-                    _month: month,
+                    month,
                     _dayw: dayw,
                 }
             },

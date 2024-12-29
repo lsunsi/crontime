@@ -8,7 +8,7 @@ pub struct Crontime {
 
 pub fn build(o: time::OffsetDateTime, s: &str) -> Result<Crontime, nom::Err<()>> {
     s.parse().map(|e| Crontime {
-        o: iter::init(o, e),
+        o: o - time::Duration::SECOND,
         e,
     })
 }

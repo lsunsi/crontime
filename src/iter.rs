@@ -1,28 +1,35 @@
-impl Iterator for super::Crontime {
-    type Item = time::OffsetDateTime;
+fn next(from: usize, to: usize, bits: &bitvec::slice::BitSlice) -> (usize, bool) {
+    if let Some(i) = bits[from..to].first_one() {
+        return (from + i, false);
+    };
 
-    fn next(&mut self) -> Option<Self::Item> {
-        let (next_second, loop_second) = next(self.o.second() as usize + 1, 60, &self.e.second);
-        self.o = self.o.replace_second(next_second as u8).expect("second");
+    if let Some(i) = bits.first_one() {
+        return (i, true);
+    };
 
-        if !loop_second {
-            return Some(self.o);
-        }
+    unreachable!()
+}
 
-        let (next_minute, loop_minute) = next(self.o.minute() as usize + 1, 60, &self.e.minute);
-        self.o = self.o.replace_minute(next_minute as u8).expect("minute");
+impl super::Crontime {
+    fn step_second(&mut self) -> bool {
+        let (second, carry) = next(self.o.second() as usize + 1, 60, &self.e.second);
+        self.o = self.o.replace_second(second as u8).expect("second");
+        carry
+    }
 
-        if !loop_minute {
-            return Some(self.o);
-        }
+    fn step_minute(&mut self) -> bool {
+        let (minute, carry) = next(self.o.minute() as usize + 1, 60, &self.e.minute);
+        self.o = self.o.replace_minute(minute as u8).expect("minute");
+        carry
+    }
 
-        let (next_hour, loop_hour) = next(self.o.hour() as usize + 1, 24, &self.e.hour);
-        self.o = self.o.replace_hour(next_hour as u8).expect("hour");
+    fn step_hour(&mut self) -> bool {
+        let (hour, carry) = next(self.o.hour() as usize + 1, 24, &self.e.hour);
+        self.o = self.o.replace_hour(hour as u8).expect("hour");
+        carry
+    }
 
-        if !loop_hour {
-            return Some(self.o);
-        }
-
+    fn step_day_and_month(&mut self) {
         let max = usize::from(self.o.month().length(self.o.year()));
         let (next_daym, loop_daym) = next(self.o.day() as usize, max, &self.e.daym);
 
@@ -67,31 +74,18 @@ impl Iterator for super::Crontime {
             self.o = o;
         } else {
             self.o = self.o.replace_day(next_daym as u8 + 1).expect("day");
-            return Some(self.o);
+        }
+    }
+}
+
+impl Iterator for super::Crontime {
+    type Item = time::OffsetDateTime;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.step_second() && self.step_minute() && self.step_hour() {
+            self.step_day_and_month()
         }
 
         Some(self.o)
     }
-}
-
-pub(super) fn init(mut o: time::OffsetDateTime, e: super::expr::Expr) -> time::OffsetDateTime {
-    let (next_minute, loop_minute) = next(o.minute() as usize, 60, &e.minute);
-    o = o.replace_minute(next_minute as u8).expect("minute");
-
-    let (next_hour, _loop_hour) = next(o.hour() as usize + loop_minute as usize, 24, &e.hour);
-    o = o.replace_hour(next_hour as u8).expect("hour");
-
-    o - time::Duration::SECOND
-}
-
-fn next(from: usize, to: usize, bits: &bitvec::slice::BitSlice) -> (usize, bool) {
-    if let Some(i) = bits[from..to].first_one() {
-        return (from + i, false);
-    };
-
-    if let Some(i) = bits.first_one() {
-        return (i, true);
-    };
-
-    unreachable!()
 }

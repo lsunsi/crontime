@@ -29,14 +29,46 @@ impl super::Crontime {
         carry
     }
 
+    fn eday(&self) -> bitvec::BitArr!(for 31) {
+        dbg!(self.o);
+        let offset = usize::from(
+            self.o
+                .replace_day(1)
+                .expect("day")
+                .weekday()
+                .number_days_from_sunday(),
+        );
+
+        if self.e.dayw.first_zero().is_none() {
+            return self.e.daym;
+        }
+
+        let mut dayw = bitvec::array::BitArray::ZERO;
+
+        dayw[..7 - offset].copy_from_bitslice(&self.e.dayw[offset..7]);
+        let mut cursor = &mut dayw[7 - offset..usize::from(self.o.month().length(self.o.year()))];
+
+        while cursor.len() > 0 {
+            let i = 7.min(cursor.len());
+            cursor[..i].copy_from_bitslice(&self.e.dayw[..i]);
+            cursor = &mut cursor[i..];
+        }
+
+        if self.e.daym.first_zero().is_none() {
+            return dayw;
+        }
+
+        dayw | self.e.daym
+    }
+
     fn step_day_and_month(&mut self) {
         let max = usize::from(self.o.month().length(self.o.year()));
-        let (next_daym, loop_daym) = next(self.o.day() as usize, max, &self.e.daym);
+        let (next_daym, loop_daym) = next(self.o.day() as usize, max, &self.eday());
 
         if loop_daym {
             let (next_month, loop_month) = next(self.o.month() as usize, 12, &self.e.month);
 
-            let mut o = self
+            self.o = self
                 .o
                 .replace_day(1)
                 .expect("hour")
@@ -44,34 +76,33 @@ impl super::Crontime {
                 .expect("month");
 
             if loop_month {
-                o = o.replace_year(o.year() + 1).expect("year");
+                self.o = self.o.replace_year(self.o.year() + 1).expect("year");
             }
 
             loop {
-                let max = usize::from(o.month().length(o.year()));
-                let (next_daym, loop_daym) = next(o.day() as usize - 1, max, &self.e.daym);
+                let max = usize::from(self.o.month().length(self.o.year()));
+                let (next_daym, loop_daym) = next(self.o.day() as usize - 1, max, &self.eday());
 
-                if !loop_daym && next_daym == usize::from(o.day()) {
+                if !loop_daym && next_daym == usize::from(self.o.day() - 1) {
                     break;
                 }
 
                 if loop_daym {
-                    o = o
+                    self.o = self
+                        .o
                         .replace_day(1)
                         .expect("hour")
-                        .replace_month(o.month().next())
+                        .replace_month(self.o.month().next())
                         .expect("month");
 
-                    if o.month() as u8 == 1 {
-                        o = o.replace_year(self.o.year() + 1).expect("year");
+                    if self.o.month() as u8 == 1 {
+                        self.o = self.o.replace_year(self.o.year() + 1).expect("year");
                     }
                 } else {
-                    o = o.replace_day(next_daym as u8 + 1).expect("hour");
+                    self.o = self.o.replace_day(next_daym as u8 + 1).expect("hour");
                     break;
                 }
             }
-
-            self.o = o;
         } else {
             self.o = self.o.replace_day(next_daym as u8 + 1).expect("day");
         }

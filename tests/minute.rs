@@ -1,13 +1,13 @@
 mod t;
 
 #[test]
-fn minute_invalid() {
+fn invalid() {
     assert!(crontime::build(t::ORIGIN, "* -1 * * * *").is_err());
     assert!(crontime::build(t::ORIGIN, "* 60 * * * *").is_err());
 }
 
 #[test]
-fn minute_any() {
+fn any() {
     t::assert(
         "0 * * * * *",
         &[
@@ -20,7 +20,7 @@ fn minute_any() {
 }
 
 #[test]
-fn minute_single() {
+fn single() {
     t::assert(
         "0 7 * * * *",
         &[
@@ -43,7 +43,7 @@ fn minute_single() {
 }
 
 #[test]
-fn minute_many() {
+fn many() {
     t::assert(
         "0 7,31,59 * * * *",
         &[
@@ -58,7 +58,7 @@ fn minute_many() {
 }
 
 #[test]
-fn minute_range() {
+fn range() {
     t::assert(
         "0 17-39 * * * *",
         &[

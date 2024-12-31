@@ -14,7 +14,7 @@ pub(super) struct Expr {
     pub hour: bitvec::BitArr!(for 24),
     pub daym: bitvec::BitArr!(for 31),
     pub month: bitvec::BitArr!(for 12),
-    pub _dayw: bitvec::BitArr!(for 7),
+    pub dayw: bitvec::BitArr!(for 7),
 }
 
 impl std::str::FromStr for Expr {
@@ -61,7 +61,7 @@ impl std::str::FromStr for Expr {
                     hour,
                     daym,
                     month,
-                    _dayw: dayw,
+                    dayw,
                 }
             },
         )

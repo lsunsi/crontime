@@ -1,13 +1,13 @@
 mod t;
 
 #[test]
-fn month_invalid() {
+fn invalid() {
     assert!(crontime::build(t::ORIGIN, "* * * * 0 *").is_err());
     assert!(crontime::build(t::ORIGIN, "* * * * 13 *").is_err());
 }
 
 #[test]
-fn month_single() {
+fn single() {
     t::assert(
         "0 0 0 1 1 *",
         &[
@@ -40,7 +40,7 @@ fn month_single() {
 }
 
 #[test]
-fn month_many() {
+fn many() {
     t::assert(
         "0 0 0 1 5,11,12 *",
         &[
@@ -54,7 +54,7 @@ fn month_many() {
 }
 
 #[test]
-fn month_range() {
+fn range() {
     t::assert(
         "0 0 0 1 10-12 *",
         &[

@@ -1,13 +1,13 @@
 mod t;
 
 #[test]
-fn second_invalid() {
+fn invalid() {
     assert!(crontime::build(t::ORIGIN, "-1 * * * * *").is_err());
     assert!(crontime::build(t::ORIGIN, "60 * * * * *").is_err());
 }
 
 #[test]
-fn second_any() {
+fn any() {
     t::assert(
         "* * * * * *",
         &[
@@ -20,7 +20,7 @@ fn second_any() {
 }
 
 #[test]
-fn second_single() {
+fn single() {
     t::assert(
         "1 * * * * *",
         &[
@@ -43,7 +43,7 @@ fn second_single() {
 }
 
 #[test]
-fn second_many() {
+fn many() {
     t::assert(
         "1,9,7 * * * * *",
         &[
@@ -58,7 +58,7 @@ fn second_many() {
 }
 
 #[test]
-fn second_range() {
+fn range() {
     t::assert(
         "3-5 * * * * *",
         &[

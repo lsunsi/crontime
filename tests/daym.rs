@@ -1,13 +1,13 @@
 mod t;
 
 #[test]
-fn daym_invalid() {
+fn invalid() {
     assert!(crontime::build(t::ORIGIN, "* * * 0 * *").is_err());
     assert!(crontime::build(t::ORIGIN, "* * * 32 * *").is_err());
 }
 
 #[test]
-fn daym_single() {
+fn single() {
     t::assert(
         "0 0 0 1 * *",
         &[
@@ -57,7 +57,7 @@ fn daym_single() {
 }
 
 #[test]
-fn daym_many() {
+fn many() {
     t::assert(
         "0 0 0 7,29,31 * *",
         &[
@@ -72,7 +72,7 @@ fn daym_many() {
 }
 
 #[test]
-fn daym_range() {
+fn range() {
     t::assert(
         "0 0 0 27-29 * *",
         &[
